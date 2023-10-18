@@ -11,8 +11,10 @@ import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.*
+import android.widget.EditText
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import com.google.android.gms.location.LocationServices
@@ -20,9 +22,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
@@ -31,6 +31,7 @@ import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
+import java.util.*
 
 class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
@@ -98,52 +99,32 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         enableMyLocation()
         zoomToLastLocation()
         setMapStyle(map)
-        // TODO: put a marker to location that the user selected
+        setMapClicks(map)
 
         // TODO: call this function after the user confirms on the selected location
         onLocationSelected()
     }
 
-
-
-    /** Permission Util Functions - Begin **/
-
-    private fun requestBackgroundPermission() {
-        if (runningQOrLater) {
-            Log.d(TAG, "requestBackgroundPermission")
-            backgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-        }
-    }
-
-    private fun requestForegroundPermission() {
-        Log.d(TAG, "requestForegroundPermission")
-        foregroundPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-    }
-
-
-    private fun foregroundLocationPermissionApproved(): Boolean = (
-                PackageManager.PERMISSION_GRANTED ==
-                        ActivityCompat.checkSelfPermission(requireContext(),
-                            Manifest.permission.ACCESS_FINE_LOCATION) &&
-                PackageManager.PERMISSION_GRANTED ==
-                        ActivityCompat.checkSelfPermission(requireContext(),
-                            Manifest.permission.ACCESS_COARSE_LOCATION))
-    @TargetApi(29)
-    private fun backgroundPermissionApproved()  {
-        if (runningQOrLater) {
-            PackageManager.PERMISSION_GRANTED ==
-                    ActivityCompat.checkSelfPermission(
-                        requireContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                    )
-        } else {
-            true
-        }
-    }
-
-    /** Permission Util Functions - End **/
-
-
     /** Map Manipulation functions - Begin **/
+    private fun setMapClicks(map: GoogleMap) {
+        map.setOnMapLongClickListener { latLng ->
+            val marker = map.addMarker(
+                MarkerOptions()
+                    .position(latLng)
+                    .title(getString(R.string.dropped_pin))
+            )
+            promptForLocationName(marker)
+        }
+
+        map.setOnPoiClickListener{poi ->
+            val marker = map.addMarker(MarkerOptions()
+                .position(poi.latLng)
+                .title(poi.name)
+            )
+            marker?.showInfoWindow()
+        }
+    }
+
     @SuppressLint("MissingPermission")
     private fun enableMyLocation() {
         if (foregroundLocationPermissionApproved()) {
@@ -188,8 +169,62 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     /** Map Manipulation functions - End **/
 
+    /** Permission Util Functions - Begin **/
+
+    private fun requestBackgroundPermission() {
+        if (runningQOrLater) {
+            Log.d(TAG, "requestBackgroundPermission")
+            backgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        }
+    }
+
+    private fun requestForegroundPermission() {
+        Log.d(TAG, "requestForegroundPermission")
+        foregroundPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+    }
+
+
+    private fun foregroundLocationPermissionApproved(): Boolean = (
+                PackageManager.PERMISSION_GRANTED ==
+                        ActivityCompat.checkSelfPermission(requireContext(),
+                            Manifest.permission.ACCESS_FINE_LOCATION) &&
+                PackageManager.PERMISSION_GRANTED ==
+                        ActivityCompat.checkSelfPermission(requireContext(),
+                            Manifest.permission.ACCESS_COARSE_LOCATION))
+    @TargetApi(29)
+    private fun backgroundPermissionApproved()  {
+        if (runningQOrLater) {
+            PackageManager.PERMISSION_GRANTED ==
+                    ActivityCompat.checkSelfPermission(
+                        requireContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                    )
+        } else {
+            true
+        }
+    }
+
+    /** Permission Util Functions - End **/
+
+
+
+
 
     /** UI Utils - Begin **/
+
+
+    private fun promptForLocationName(marker: Marker?) {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle(getString(R.string.enter_location_name))
+
+        val input = EditText(context)
+        builder.setView(input)
+
+        builder.setPositiveButton("OK") { dialog, which ->
+            marker?.title = input.text?.toString()
+            marker?.showInfoWindow()
+        }
+        builder.create().show()
+    }
     private fun showPermissionDeniedSnackBar() {
         Snackbar.make(
             binding.mapsContainer,
