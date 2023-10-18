@@ -31,14 +31,14 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderFragmentDirections
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
+import com.udacity.project4.utils.foregroundLocationPermissionApproved
+import com.udacity.project4.utils.requestForegroundPermission
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 import java.util.*
 
 class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
-    private val runningQOrLater = android.os.Build.VERSION.SDK_INT >=
-            android.os.Build.VERSION_CODES.Q
 //    private var isZoomed = false
     companion object {
         private const val TAG =  "SelectLocationFragment"
@@ -51,7 +51,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private var selectedLocation: Marker? = null
     private var selectedPoi:PointOfInterest? = null
 
-    private lateinit var backgroundPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var foregroundPermissionLauncher: ActivityResultLauncher<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,17 +63,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                 Log.d(TAG, "Calling enableMyLocation from activity result")
                 enableMyLocation()
                 zoomToLastLocation()
-            }
-        }
-
-        if (runningQOrLater) {
-            backgroundPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-                if (!isGranted) {
-                    Log.d(TAG, "Show snack bar from backgroundPermissionLauncer")
-                    showPermissionDeniedSnackBar()
-                } else {
-                    enableMyLocation()
-                }
             }
         }
     }
@@ -174,10 +162,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private fun enableMyLocation() {
-        if (foregroundLocationPermissionApproved()) {
+        if (foregroundLocationPermissionApproved(requireContext())) {
             map.isMyLocationEnabled = true
         } else {
-            requestForegroundPermission()
+            requestForegroundPermission(foregroundPermissionLauncher)
         }
     }
 
@@ -213,42 +201,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     }
 
     /** Map Manipulation functions - End **/
-
-    /** Permission Util Functions - Begin **/
-
-    private fun requestBackgroundPermission() {
-        if (runningQOrLater) {
-            Log.d(TAG, "requestBackgroundPermission")
-            backgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-        }
-    }
-
-    private fun requestForegroundPermission() {
-        Log.d(TAG, "requestForegroundPermission")
-        foregroundPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-    }
-
-
-    private fun foregroundLocationPermissionApproved(): Boolean = (
-                PackageManager.PERMISSION_GRANTED ==
-                        ActivityCompat.checkSelfPermission(requireContext(),
-                            Manifest.permission.ACCESS_FINE_LOCATION) &&
-                PackageManager.PERMISSION_GRANTED ==
-                        ActivityCompat.checkSelfPermission(requireContext(),
-                            Manifest.permission.ACCESS_COARSE_LOCATION))
-    @TargetApi(29)
-    private fun backgroundPermissionApproved()  {
-        if (runningQOrLater) {
-            PackageManager.PERMISSION_GRANTED ==
-                    ActivityCompat.checkSelfPermission(
-                        requireContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                    )
-        } else {
-            true
-        }
-    }
-
-    /** Permission Util Functions - End **/
 
     /** UI Utils - Begin **/
     private fun promptForLocationName(marker: Marker?) {
