@@ -31,7 +31,7 @@ class SaveReminderFragment : BaseFragment() {
     companion object {
         private const val TAG =  "SaveReminderFragment"
         internal const val ACTION_GEOFENCE_EVENT =
-            "HuntMainActivity.treasureHunt.action.ACTION_GEOFENCE_EVENT"
+            "RemindersActivity.savereminder.action.ACTION_GEOFENCE_EVENT"
     }
 
     // Get the view model this time as a single to be shared with the another fragment
@@ -42,9 +42,9 @@ class SaveReminderFragment : BaseFragment() {
     private lateinit var reminder: ReminderDataItem
 
     private val geofencePendingIntent: PendingIntent by lazy {
-        val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
+        val intent = Intent(requireActivity(), GeofenceBroadcastReceiver::class.java)
         intent.action = ACTION_GEOFENCE_EVENT
-        PendingIntent.getBroadcast(requireContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        PendingIntent.getBroadcast(requireContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
