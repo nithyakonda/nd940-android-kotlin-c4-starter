@@ -67,6 +67,7 @@ dependencies {
     implementation "androidx.room:room-ktx:$roomVersion"
 
     // Koin
+    androidTestImplementation "io.insert-koin:koin-test:$koinVersion"
     implementation "io.insert-koin:koin-android:$koinVersion"
     implementation platform('com.google.firebase:firebase-bom:32.3.1')
 
