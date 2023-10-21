@@ -6,6 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
+import com.udacity.project4.locationreminders.data.dto.Result
 import com.udacity.project4.locationreminders.data.dto.Result.Success
 import com.udacity.project4.locationreminders.data.dto.succeeded
 import kotlinx.coroutines.Dispatchers
@@ -69,6 +70,20 @@ class RemindersLocalRepositoryTest {
         assertThat(result.data.location, `is`(reminder.location))
         assertThat(result.data.latitude, `is`(reminder.latitude))
         assertThat(result.data.longitude, `is`(reminder.longitude))
+    }
+
+    @Test
+    fun getReminder_returnsNotFoundError() = runBlocking{
+        val reminder = ReminderDTO("title", "description", "location", -10.0, 10.00)
+
+        // When saving the reminder
+        dataSource.saveReminder(reminder)
+        val result = dataSource.getReminder("12345")
+
+        // Then reminder is saved successfully
+        assertThat(result.succeeded, `is`(false))
+        result as Result.Error
+        assertThat(result.message, `is`("Reminder not found!"))
     }
 
     @Test

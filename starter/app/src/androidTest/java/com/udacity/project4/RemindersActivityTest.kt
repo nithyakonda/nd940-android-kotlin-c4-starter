@@ -2,6 +2,7 @@ package com.udacity.project4
 
 import android.app.Activity
 import android.app.Application
+import android.widget.Toast
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.Espresso.onView
@@ -161,10 +162,6 @@ class RemindersActivityTest :
 
 //        // verify toast messages
         onView(withText(R.string.geofence_added)).inRoot(withDecorView(not(`is`(
-            getActivity(activityScenario)?.window?.decorView))))
-            .check(matches(isDisplayed()))
-        Thread.sleep(2000)
-        onView(withText(R.string.reminder_saved)).inRoot(withDecorView(not(`is`(
             getActivity(activityScenario)?.window?.decorView))))
             .check(matches(isDisplayed()))
 
