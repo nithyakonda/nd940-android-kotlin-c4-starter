@@ -36,6 +36,7 @@
         tools:layout="@layout/fragment_select_location" >
         <action
             android:id="@+id/action_selectLocationFragment_to_saveReminderFragment"
-            app:destination="@id/saveReminderFragment" />
+            app:destination="@id/saveReminderFragment"
+            app:popUpTo="@id/saveReminderFragment" />
     </fragment>
 </navigation>

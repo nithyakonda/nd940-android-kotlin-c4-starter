@@ -209,6 +209,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         builder.setTitle(getString(R.string.enter_location_name))
 
         val input = EditText(context)
+        input.hint = "Name"
         builder.setView(input)
 
         builder.setPositiveButton("OK") { dialog, which ->
