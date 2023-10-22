@@ -164,6 +164,7 @@ class SaveReminderFragment : BaseFragment() {
                 Log.e("Add Geofence", geofence.requestId)
                 _viewModel.showToast.value = getString(R.string.geofence_added)
                 _viewModel.validateAndSaveReminder(reminder)
+                _viewModel.showToast.postValue(getString(R.string.reminder_saved))
                 _viewModel.navigationCommand.value = NavigationCommand.To(
                     SaveReminderFragmentDirections.actionSaveReminderFragmentToReminderListFragment())
             }
