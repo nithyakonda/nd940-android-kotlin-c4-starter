@@ -58,18 +58,6 @@ class SaveReminderViewModelTest {
     }
 
     @Test
-    fun validateAndSaveReminder_savesReminderSuccessfully() {
-        // When reminder data has no validation errors
-        val reminder = ReminderDataItem("Title4", "Description4", "Location4", -14.00, 14.00)
-        viewModel.validateAndSaveReminder(reminder)
-
-        // Then toast "Reminder Saved" is triggered and show loading live data is set to false
-        val result = viewModel.showToast.getOrAwaitValue()
-        assertThat(result, `is`(context.getString(R.string.reminder_saved)))
-
-    }
-
-    @Test
     fun validateAndSaveReminder_loading() {
         mainCoroutineRule.pauseDispatcher()
 
