@@ -34,7 +34,6 @@ import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.foregroundLocationPermissionApproved
 import com.udacity.project4.utils.requestForegroundPermission
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
-import com.udacity.project4.utils.showPermissionDeniedSnackBar
 import org.koin.android.ext.android.inject
 import java.util.*
 
@@ -58,13 +57,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         foregroundPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (!isGranted) {
-                Log.d(TAG, "Show snack bar from foregroundPermissionLauncher")
-                showPermissionDeniedSnackBar(binding.mapsContainer, requireActivity())
-            } else {
-                Log.d(TAG, "Calling enableMyLocation from activity result")
-                enableMyLocation()
-                zoomToLastLocation()
+                _viewModel.showSnackBar.value = getString(R.string.permission_denied_explanation)
             }
+            enableMyLocation()
+            zoomToLastLocation()
         }
     }
 

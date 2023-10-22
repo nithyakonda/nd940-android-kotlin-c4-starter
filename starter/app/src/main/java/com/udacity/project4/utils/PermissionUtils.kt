@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat.startActivity
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
+import com.udacity.project4.base.BaseViewModel
 
 private val runningQOrLater = android.os.Build.VERSION.SDK_INT >=
         android.os.Build.VERSION_CODES.Q
@@ -46,19 +47,4 @@ fun backgroundPermissionApproved(context: Context): Boolean  {
     } else {
         return true
     }
-}
-
-fun showPermissionDeniedSnackBar(view: View, context: Context) {
-    Snackbar.make(
-        view,
-        R.string.permission_denied_explanation,
-        Snackbar.LENGTH_INDEFINITE
-    )
-        .setAction(R.string.settings) {
-            context.startActivity(Intent().apply {
-                action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            })
-        }.show()
 }

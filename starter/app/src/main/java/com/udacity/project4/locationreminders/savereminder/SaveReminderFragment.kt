@@ -51,11 +51,9 @@ class SaveReminderFragment : BaseFragment() {
         super.onCreate(savedInstanceState)
         permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (!isGranted) {
-//                Log.d(TAG, "Show snack bar from backgroundPermissionLauncer")
-                showPermissionDeniedSnackBar(binding.createReminderContainer, requireContext())
-            } else {
-                checkPermissionsAndAddGeoFence()
+               _viewModel.showSnackBar.value = getString(R.string.permission_denied_explanation)
             }
+            checkPermissionsAndAddGeoFence()
         }
 
         geofencingClient = LocationServices.getGeofencingClient(requireActivity())
@@ -94,6 +92,13 @@ class SaveReminderFragment : BaseFragment() {
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_TURN_DEVICE_LOCATION_ON) {
+            checkDeviceLocationSettingsAndStartGeofence(false)
+        }
+    }
+
     private fun checkPermissionsAndAddGeoFence() {
         if (foregroundAndBackgroundLocationPermissionApproved()) {
             checkDeviceLocationSettingsAndStartGeofence()
@@ -115,20 +120,12 @@ class SaveReminderFragment : BaseFragment() {
         locationSettingsResponseTask.addOnFailureListener { exception ->
             if (exception is ResolvableApiException && resolve) {
                 try {
-                    exception.startResolutionForResult(
-                        requireActivity(),
-                        REQUEST_TURN_DEVICE_LOCATION_ON
-                    )
+                    startIntentSenderForResult(exception.resolution.intentSender, REQUEST_TURN_DEVICE_LOCATION_ON, null,0,0,0,null)
                 } catch (sendEx: IntentSender.SendIntentException) {
                     Log.d(TAG, "Error getting location settings resolution: " + sendEx.message)
                 }
             } else {
-                Snackbar.make(
-                    binding.createReminderContainer,
-                    R.string.location_required_error, Snackbar.LENGTH_INDEFINITE
-                ).setAction(android.R.string.ok) {
-                    checkDeviceLocationSettingsAndStartGeofence()
-                }.show()
+                _viewModel.showToast.value = getString(R.string.location_required_error)
             }
         }
 
@@ -164,8 +161,8 @@ class SaveReminderFragment : BaseFragment() {
 
         geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)?.run {
             addOnSuccessListener {
-                _viewModel.showToast.value = getString(R.string.geofence_added)
                 Log.e("Add Geofence", geofence.requestId)
+                _viewModel.showToast.value = getString(R.string.geofence_added)
                 _viewModel.validateAndSaveReminder(reminder)
                 _viewModel.navigationCommand.value = NavigationCommand.To(
                     SaveReminderFragmentDirections.actionSaveReminderFragmentToReminderListFragment())
